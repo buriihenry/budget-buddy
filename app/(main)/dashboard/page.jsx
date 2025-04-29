@@ -2,12 +2,14 @@ import React from 'react';
 import { CreateAccountDrawer } from "@/components/create-account-drawer";
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus } from "lucide-react";
-import { getUserAccounts } from '@/actions/dashboard';
+import { getUserAccounts, getUserTransactions } from '@/actions/dashboard';
 import { AccountCard } from './_components/account-card';
+import { TransactionTable } from '../account/_components/transaction-table';
 
 
 async function DashboardPage () {
   const accounts = await getUserAccounts();
+  const transactions = await getUserTransactions(); // Fetch all transactions
 
   const safeAccounts = Array.isArray(accounts) ? accounts.filter(account => account?.id) : [];
 
@@ -36,6 +38,11 @@ async function DashboardPage () {
 
     </div>
 
+    {/* Recent Transactions Table */}
+    <div className="mt-10">
+      <h2 className="text-2xl font-bold mb-4">Recent Transactions</h2>
+      <TransactionTable transactions={transactions} />
+    </div>
 
   </div>
   )
