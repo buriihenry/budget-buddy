@@ -1,8 +1,54 @@
 import { z } from "zod";
 
-export const accountSchema = z.object ({
-    name: z.string().min(1, "Name is required"),
-    type: z.enum(["CURRENT", "SAVINGS"]),
-    balance: z.string().min(1, "Intial balance is required"),
-    isDefault: z.boolean().default(false),
-})
+/**
+ * Schema for validating account data
+ * Used for both account creation and updates
+ * 
+ * @property {string} name - Account name (required)
+ * @property {('CURRENT'|'SAVINGS')} type - Account type (must be either CURRENT or SAVINGS)
+ * @property {string} balance - Initial account balance (required)
+ * @property {boolean} isDefault - Whether this is the default account (defaults to false)
+ */
+export const accountSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  type: z.enum(["CURRENT", "SAVINGS"]),
+  balance: z.string().min(1, "Initial balance is required"),
+  isDefault: z.boolean().default(false),
+});
+
+/**
+ * Schema for validating transaction data
+ * Used for both transaction creation and updates
+ * Includes validation for recurring transactions
+ * 
+ * @property {('INCOME'|'EXPENSE')} type - Transaction type (must be either INCOME or EXPENSE)
+ * @property {string} amount - Transaction amount (required)
+ * @property {string} [description] - Optional transaction description
+ * @property {Date} date - Transaction date (required)
+ * @property {string} accountId - ID of the associated account (required)
+ * @property {string} category - Transaction category (required)
+ * @property {boolean} isRecurring - Whether this is a recurring transaction (defaults to false)
+ * @property {('DAILY'|'WEEKLY'|'MONTHLY'|'YEARLY')} [recurringInterval] - Required if isRecurring is true
+ */
+export const transactionSchema = z
+  .object({
+    type: z.enum(["INCOME", "EXPENSE"]),
+    amount: z.string().min(1, "Amount is required"),
+    description: z.string().optional(),
+    date: z.date({ required_error: "Date is required" }),
+    accountId: z.string().min(1, "Account is required"),
+    category: z.string().min(1, "Category is required"),
+    isRecurring: z.boolean().default(false),
+    recurringInterval: z
+      .enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"])
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.isRecurring && !data.recurringInterval) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Recurring interval is required for recurring transactions",
+        path: ["recurringInterval"],
+      });
+    }
+  });

@@ -5,10 +5,15 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
-                hostname: "randomuser.me",
+                hostname: "randomuser.me",  
             },
         ],
     },
+    experimental: { 
+        serverActions: {
+            bodySizeLimit: "5mb",
+            },
+        },
 
 
 };
