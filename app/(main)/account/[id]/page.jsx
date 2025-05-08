@@ -7,7 +7,8 @@ import AccountChart from "../_components/account-chart";
 
 
 export default async function AccountPage({ params }) {
-  const accountData = await getAccountWithTransactions(params.id);
+  const accountId = await Promise.resolve(params?.id);
+  const accountData = await getAccountWithTransactions(accountId);
 
   if (!accountData) {
     notFound();

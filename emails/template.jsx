@@ -100,7 +100,7 @@ import {
               {/* AI Insights */}
               {data?.insights && (
                 <Section style={styles.section}>
-                  <Heading style={styles.heading}>Welth Insights</Heading>
+                  <Heading style={styles.heading}>Budget Buddy Insights</Heading>
                   {data.insights.map((insight, index) => (
                     <Text key={index} style={styles.text}>
                       • {insight}

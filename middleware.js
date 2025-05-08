@@ -1,32 +1,49 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { redirect } from "next/dist/server/api-utils";
+import { NextResponse } from "next/server";
+import aj from "@/lib/arcjet";
 
 const isProctedRoute = createRouteMatcher([
     "/dashboard(.*)",
     "/account(.*)",
     "/transaction(.*)",
-
 ])
 
-// to redirect user to sign in page if they are not signed in
-export default clerkMiddleware(async (auth,req) => {
-    const { userId } = await auth();
-
-    if (!userId && isProctedRoute(req)){
-        const { redirectToSignIn } = await auth();
-
-        return redirectToSignIn();
-
+export default clerkMiddleware((auth, req) => {
+    if (isProctedRoute(req.nextUrl.pathname)) {
+        if (!auth.userId) {
+            const signInUrl = new URL("/sign-in", req.url);
+            signInUrl.searchParams.set("redirect_url", req.url);
+            return Response.redirect(signInUrl);
+        }
     }
 
+    // Apply Arcjet protection to transaction routes
+    if (req.nextUrl.pathname.startsWith("/transaction")) {
+        return aj(req).then((decision) => {
+            if (decision.isDenied()) {
+                return new NextResponse(
+                    JSON.stringify({
+                        error: "Too many requests. Please try again later.",
+                    }),
+                    {
+                        status: 429,
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+            }
+            return NextResponse.next();
+        });
+    }
 
+    return NextResponse.next();
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    "/((?!.+\\.[\\w]+$|_next).*)",
+    "/",
+    "/(api|trpc)(.*)",
   ],
 };

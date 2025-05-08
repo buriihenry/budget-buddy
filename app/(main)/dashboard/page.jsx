@@ -8,6 +8,8 @@ import { BudgetProgress } from "./_components/budget-progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { DashboardOverview } from "./_components/transaction-overview";
+import { TransactionTable } from "@/app/(main)/account/_components/transaction-table";
+import { BarLoader } from "react-spinners";
 
 export default async function DashboardPage() {
   const [accounts, transactions] = await Promise.all([
@@ -23,6 +25,9 @@ export default async function DashboardPage() {
     budgetData = await getCurrentBudget(defaultAccount.id);
   }
 
+  // Ensure transactions is an array
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+
   return (
     <div className="space-y-8">
       {/* Budget Progress */}
@@ -34,7 +39,7 @@ export default async function DashboardPage() {
       {/* Dashboard Overview */}
       <DashboardOverview
         accounts={accounts}
-        transactions={transactions || []}
+        transactions={safeTransactions}
       />
                                                               
       {/* Accounts Grid */}
@@ -51,6 +56,14 @@ export default async function DashboardPage() {
           accounts?.map((account) => (
             <AccountCard key={account.id} account={account} />
           ))}
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Recent Transactions</h2>
+        <Suspense fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}>
+          <TransactionTable transactions={safeTransactions} />
+        </Suspense>
       </div>
     </div>
   );
