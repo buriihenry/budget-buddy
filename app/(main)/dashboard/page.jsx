@@ -8,7 +8,7 @@ import { BudgetProgress } from "./_components/budget-progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { DashboardOverview } from "./_components/transaction-overview";
-import { TransactionTable } from "@/app/(main)/account/_components/transaction-table";
+import { RecentTransactions } from "./_components/recent-transactions";
 import { BarLoader } from "react-spinners";
 
 export default async function DashboardPage() {
@@ -36,12 +36,19 @@ export default async function DashboardPage() {
         currentExpenses={budgetData?.currentExpenses || 0}
       />
 
-      {/* Dashboard Overview */}
-      <DashboardOverview
-        accounts={accounts}
-        transactions={safeTransactions}
-      />
-                                                              
+      {/* Dashboard Overview and Recent Transactions */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Suspense fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}>
+          <DashboardOverview
+            accounts={accounts}
+            transactions={safeTransactions}
+          />
+        </Suspense>
+        <Suspense fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}>
+          <RecentTransactions transactions={safeTransactions} />
+        </Suspense>
+      </div>
+
       {/* Accounts Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <CreateAccountDrawer>
@@ -52,18 +59,10 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </CreateAccountDrawer>
-        {accounts.length > 0 &&                                                                                                                   
+        {accounts.length > 0 &&
           accounts?.map((account) => (
             <AccountCard key={account.id} account={account} />
           ))}
-      </div>
-
-      {/* Recent Transactions */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Recent Transactions</h2>
-        <Suspense fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}>
-          <TransactionTable transactions={safeTransactions} />
-        </Suspense>
       </div>
     </div>
   );

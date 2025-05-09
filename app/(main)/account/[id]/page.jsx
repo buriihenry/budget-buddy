@@ -3,12 +3,22 @@ import { getAccountWithTransactions } from "@/actions/account";
 import { BarLoader } from "react-spinners";
 import { TransactionTable } from "../_components/transaction-table";
 import { notFound } from "next/navigation";
-import AccountChart from "../_components/account-chart";
+import { AccountChart } from "../_components/account-chart";
 
+// Generate static params for the route
+export async function generateStaticParams() {
+  return [];
+}
 
 export default async function AccountPage({ params }) {
-  const accountId = await Promise.resolve(params?.id);
-  const accountData = await getAccountWithTransactions(accountId);
+  // Properly handle the dynamic route parameter
+  const id = await Promise.resolve(params).then(p => p.id);
+  
+  if (!id) {
+    notFound();
+  }
+
+  const accountData = await getAccountWithTransactions(id);
 
   if (!accountData) {
     notFound();
@@ -40,14 +50,11 @@ export default async function AccountPage({ params }) {
       </div>
 
       {/* Chart Section */}
-
       <Suspense
         fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
       >
         <AccountChart transactions={transactions} />
       </Suspense>
-
-     
 
       {/* Transactions Table */}
       <Suspense
