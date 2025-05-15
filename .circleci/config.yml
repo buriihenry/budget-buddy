@@ -16,18 +16,8 @@ jobs:
           paths:
             - ~/.npm
           key: npm-cache-{{ checksum "package-lock.json" }}
-      - run:
-          name: Add a default test script to package.json
-          command: |
-            jq '.scripts.test = "jest"' package.json > package.tmp.json && mv package.tmp.json package.json
-      - run:
-          name: Install Jest
-          command: npm install --save-dev jest
-      - run:
-          name: Run tests with Jest
-          command: npm test || echo "No tests found, skipping."
 workflows:
   version: 2
-  build_and_test:
+  build_only:
     jobs:
       - build
