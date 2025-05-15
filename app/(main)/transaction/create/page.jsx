@@ -5,7 +5,7 @@ import { getTransaction } from "@/actions/transaction";
 
 export default async function AddTransactionPage({ searchParams }) {
   const accounts = await getUserAccounts();
-  const editId = await Promise.resolve(searchParams?.edit);
+  const editId = searchParams?.edit;
 
   let initialData = null;
   if (editId) {
